@@ -8,125 +8,159 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrController extends Controller
 {
+    /**
+     * Show file upload form
+     */
     public function index()
     {
-        return view('input');
+        return view('input'); // Your upload form view
     }
 
+    /**
+     * Handle file upload and QR generation
+     */
     public function upload(Request $request)
     {
         $request->validate([
-            'document' => 'required|max:2048',
+            'upload_method' => 'required|in:file,url',
+            'document' => 'required_if:upload_method,file|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            'document_url' => 'required_if:upload_method,url|url|max:500',
         ]);
 
-        // Upload the document
-        $file = $request->file('document');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('documents'), $fileName);
+        $url = '';
+        $fileName = '';
 
-        // Save to database
-        File::create([
-            'FileName' => $fileName,
-            'FilePath' => asset("documents/" . $fileName),
-        ]);
+        if ($request->upload_method === 'file') {
+            // Handle file upload
+            $file = $request->file('document');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $fileName = time() . '_' . preg_replace('/\s+/', '_', $originalName);
 
-        $url = asset("documents/" . $fileName);
+            // Compress file if image
+            $compressed = $this->compressFile($file, $extension);
+            $savePath = public_path('documents/' . $fileName);
 
-        // Generate QR Code with logo using GD only
-        $qrCodeImage = $this->generateQRWithLogo($url);
+            if ($compressed) {
+                file_put_contents($savePath, $compressed);
+            } else {
+                $file->move(public_path('documents'), $fileName);
+            }
 
-        // Return image directly to browser
-        return response($qrCodeImage)->header('Content-Type', 'image/png');
+            $url = asset("documents/" . $fileName);
+
+            File::create([
+                'FileName' => $fileName,
+                'FilePath' => $url,
+                'UploadMethod' => 'file',
+            ]);
+        } else {
+            // Handle URL input (like Google Maps, Drive, etc.)
+            $url = trim($request->document_url);
+            $fileName = parse_url($url, PHP_URL_HOST) ?: 'External Link';
+
+            File::create([
+                'FileName' => $fileName,
+                'FilePath' => $url,
+                'UploadMethod' => 'url',
+            ]);
+        }
+
+        // Encode URL safely for QR generation
+        $safeUrl = htmlspecialchars_decode(urldecode($url));
+
+        // Generate QR code
+        $qrCodeImage = $this->generateQRWithLogo($safeUrl);
+
+        return response($qrCodeImage)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'inline; filename="qrcode.png"');
+    }
+
+    private function compressFile($file, $extension)
+    {
+        try {
+            $ext = strtolower($extension);
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                return null;
+            }
+
+            $image = ($ext === 'png') ? imagecreatefrompng($file->getRealPath()) : imagecreatefromjpeg($file->getRealPath());
+            if (!$image) return null;
+
+            $maxWidth = 1920;
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            if ($width > $maxWidth) {
+                $newHeight = (int)(($maxWidth / $width) * $height);
+                $resized = imagecreatetruecolor($maxWidth, $newHeight);
+                if ($ext === 'png') {
+                    imagealphablending($resized, false);
+                    imagesavealpha($resized, true);
+                }
+                imagecopyresampled($resized, $image, 0, 0, 0, 0, $maxWidth, $newHeight, $width, $height);
+                imagedestroy($image);
+                $image = $resized;
+            }
+
+            ob_start();
+            ($ext === 'png') ? imagepng($image, null, 6) : imagejpeg($image, null, 85);
+            $compressed = ob_get_clean();
+            imagedestroy($image);
+
+            return $compressed;
+        } catch (\Exception $e) {
+            \Log::error('Compression failed: ' . $e->getMessage());
+            return null;
+        }
     }
 
     private function generateQRWithLogo($url)
     {
         $logoPath = public_path('images/logo.png');
 
-        // Generate QR with GD backend (no imagick)
-        $qrCode = QrCode::format('png')   // force PNG, but still works with GD
+        $qrCode = QrCode::format('png')
             ->size(500)
             ->errorCorrection('H')
             ->margin(1)
             ->generate($url);
 
-        // If logo exists, merge it
-        if (file_exists($logoPath)) {
-            return $this->mergeLogoManually($qrCode, $logoPath);
-        }
-
-        return $qrCode;
+        return file_exists($logoPath)
+            ? $this->mergeLogoManually($qrCode, $logoPath)
+            : $qrCode;
     }
 
     private function mergeLogoManually($qrCode, $logoPath)
     {
         try {
-            // Convert QR code string to GD image
-            $qrImage = imagecreatefromstring($qrCode);
+            $qrImg = imagecreatefromstring($qrCode);
+            $logo = imagecreatefrompng($logoPath);
+            if (!$qrImg || !$logo) return $qrCode;
 
-            // Load logo
-            $logoInfo = getimagesize($logoPath);
-            if ($logoInfo[2] == IMAGETYPE_PNG) {
-                $logo = imagecreatefrompng($logoPath);
-            } elseif ($logoInfo[2] == IMAGETYPE_JPEG) {
-                $logo = imagecreatefromjpeg($logoPath);
-            } else {
-                return $qrCode; // unsupported logo format
-            }
+            $qrW = imagesx($qrImg);
+            $qrH = imagesy($qrImg);
+            $logoW = imagesx($logo);
+            $logoH = imagesy($logo);
 
-            // Get dimensions
-            $qrWidth = imagesx($qrImage);
-            $qrHeight = imagesy($qrImage);
-            $logoWidth = imagesx($logo);
-            $logoHeight = imagesy($logo);
+            $newW = (int)($qrW * 0.2);
+            $newH = (int)($logoH * ($newW / $logoW));
+            $x = ($qrW - $newW) / 2;
+            $y = ($qrH - $newH) / 2;
 
-            // Resize logo (20% of QR size)
-            $logoQrWidth = $qrWidth / 5;
-            $logoQrHeight = $logoHeight * $logoQrWidth / $logoWidth;
+            imagecopyresampled($qrImg, $logo, $x, $y, 0, 0, $newW, $newH, $logoW, $logoH);
 
-            // Center position
-            $x = ($qrWidth - $logoQrWidth) / 2;
-            $y = ($qrHeight - $logoQrHeight) / 2;
-
-            // Add white background behind logo
-            $white = imagecolorallocate($qrImage, 255, 255, 255);
-            $padding = 10;
-            imagefilledrectangle(
-                $qrImage,
-                $x - $padding,
-                $y - $padding,
-                $x + $logoQrWidth + $padding,
-                $y + $logoQrHeight + $padding,
-                $white
-            );
-
-            // Merge logo
-            imagecopyresampled(
-                $qrImage,
-                $logo,
-                $x,
-                $y,
-                0,
-                0,
-                $logoQrWidth,
-                $logoQrHeight,
-                $logoWidth,
-                $logoHeight
-            );
-
-            // Convert back to PNG string
             ob_start();
-            imagepng($qrImage);
-            $mergedImage = ob_get_clean();
+            imagepng($qrImg);
+            $output = ob_get_clean();
 
-            // Free resources
-            imagedestroy($qrImage);
+            imagedestroy($qrImg);
             imagedestroy($logo);
 
-            return $mergedImage;
-
+            return $output;
         } catch (\Exception $e) {
-            return $qrCode; // fallback: return plain QR
+            \Log::error('QR merge failed: ' . $e->getMessage());
+            return $qrCode;
         }
     }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,6 +37,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -167,6 +169,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -209,81 +212,186 @@
                 font-size: 24px;
             }
         }
+
+        .upload-method-toggle {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-method-toggle input[type="radio"] {
+            display: none;
+        }
+
+        .upload-method-toggle label {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-method-toggle input[type="radio"]:checked+label {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .input-help {
+            display: block;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .file-input-wrapper.drag-over {
+            border-color: #4CAF50;
+            background: #f0f9f0;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>📤 Upload Your File</h2>
         <p class="subtitle">Share your documents securely</p>
 
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success">
                 ✓ {{ session('success') }}
             </div>
         @endif
 
-        @if($errors->any())
+        @if ($errors->any())
             <div class="alert alert-error">
                 <strong>⚠ Upload Failed:</strong>
                 <ul>
-                    @foreach($errors->all() as $error)
+                    @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
 
-        <form action="{{ route('upload') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('upload') }}" method="POST" enctype="multipart/form-data" target="_blank">
+
             @csrf
+
+            <!-- Upload Method Selection -->
             <div class="form-group">
+                <label>Choose Upload Method</label>
+                <div class="upload-method-toggle">
+                    <input type="radio" name="upload_method" id="methodFile" value="file" checked>
+                    <label for="methodFile">📄 Upload File</label>
+
+                    <input type="radio" name="upload_method" id="methodUrl" value="url">
+                    <label for="methodUrl">🔗 Enter URL</label>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="form-group" id="fileUploadSection">
                 <label for="document">Select Document</label>
                 <div class="file-input-wrapper" id="fileInputWrapper">
                     <div class="upload-icon">☁️</div>
                     <div class="file-input-text">Click to browse or drag and drop</div>
                     <div class="file-input-subtext">PDF, DOC, DOCX, JPG, PNG (Max 2MB)</div>
-                    <input type="file" name="document" id="document" required>
+                    <input type="file" name="document" id="document">
                     <div class="file-name" id="fileName"></div>
                 </div>
             </div>
-            <button type="submit">Upload Document</button>
+
+            <!-- URL Input Section -->
+            <div class="form-group" id="urlInputSection" style="display: none;">
+                <label for="document_url">Enter Document URL</label>
+                <input type="url" name="document_url" id="document_url"
+                    placeholder="https://example.com/document.pdf" class="url-input">
+                <small class="input-help">Enter a direct link to your document</small>
+            </div>
+
+            <button type="submit">Generate QR Code</button>
         </form>
     </div>
 
     <script>
-        const fileInput = document.getElementById('document');
-        const fileInputWrapper = document.getElementById('fileInputWrapper');
-        const fileNameDisplay = document.getElementById('fileName');
+        document.addEventListener('DOMContentLoaded', function() {
+            const methodFile = document.getElementById('methodFile');
+            const methodUrl = document.getElementById('methodUrl');
+            const fileSection = document.getElementById('fileUploadSection');
+            const urlSection = document.getElementById('urlInputSection');
+            const fileInput = document.getElementById('document');
+            const urlInput = document.getElementById('document_url');
 
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const fileName = this.files[0].name;
-                const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
-                fileNameDisplay.innerHTML = `📄 ${fileName} (${fileSize} MB)`;
-                fileNameDisplay.classList.add('show');
-            }
-        });
-
-        // Drag and drop functionality
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            fileInputWrapper.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            fileInputWrapper.addEventListener(eventName, () => {
-                fileInputWrapper.classList.add('dragover');
+            // Toggle between file and URL input
+            methodFile.addEventListener('change', function() {
+                if (this.checked) {
+                    fileSection.style.display = 'block';
+                    urlSection.style.display = 'none';
+                    fileInput.required = true;
+                    urlInput.required = false;
+                    urlInput.value = '';
+                }
             });
-        });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            fileInputWrapper.addEventListener(eventName, () => {
-                fileInputWrapper.classList.remove('dragover');
+            methodUrl.addEventListener('change', function() {
+                if (this.checked) {
+                    fileSection.style.display = 'none';
+                    urlSection.style.display = 'block';
+                    fileInput.required = false;
+                    urlInput.required = true;
+                    fileInput.value = '';
+                }
+            });
+
+            // File name display
+            const fileInputWrapper = document.getElementById('fileInputWrapper');
+            const fileNameDisplay = document.getElementById('fileName');
+
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                    fileInputWrapper.classList.add('has-file');
+                }
+            });
+
+            // Drag and drop
+            fileInputWrapper.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+
+            fileInputWrapper.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+
+            fileInputWrapper.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileNameDisplay.textContent = e.dataTransfer.files[0].name;
+                    this.classList.add('has-file');
+                }
             });
         });
     </script>
+
 </body>
+
 </html>
