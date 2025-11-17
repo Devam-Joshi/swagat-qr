@@ -189,7 +189,7 @@
                         <div class="col">
                             <div class="d-flex flex-column">
                                 <div class="image-team">
-                                    <img src="{{ asset('assets/image/dummy-img-600x700.jpg') }}" alt="Pooja Joshi"
+                                    <img src="{{ asset('assets/myImage/Pooja600.png') }}" alt="Pooja Joshi"
                                         class="img-fluid">
                                     <div class="social-team-wrapper">
                                         <div class="social-team-spacer"></div>
@@ -273,7 +273,7 @@
                         <div class="col">
                             <div class="d-flex flex-column">
                                 <div class="image-team">
-                                    <img src="{{ asset('assets/image/dummy-img-600x700.jpg') }}" alt="Mayur Joshi"
+                                    <img src="{{ asset('assets/myImage/Mayur600.png') }}" alt="Mayur Joshi"
                                         class="img-fluid">
                                     <div class="social-team-wrapper">
                                         <div class="social-team-spacer"></div>
@@ -301,7 +301,7 @@
                         <div class="col">
                             <div class="d-flex flex-column">
                                 <div class="image-team">
-                                    <img src="{{ asset('assets/image/dummy-img-600x700.jpg') }}" alt="Jenil Parmar"
+                                    <img src="{{ asset('assets/myImage/Riddhi600.png') }}" alt="Jenil Parmar"
                                         class="img-fluid">
                                     <div class="social-team-wrapper">
                                         <div class="social-team-spacer"></div>
