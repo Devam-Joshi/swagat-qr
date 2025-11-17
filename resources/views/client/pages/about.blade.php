@@ -236,7 +236,7 @@
                                 </div>
                                 <div class="team-profile">
                                     <h4>Devam Joshi</h4>
-                                    <span class="title">Co-CEO & Digital Marketing Head</span>
+                                    <span class="title">Co-CEO & Digital Marketing Head | Developement Head</span>
                                 </div>
                             </div>
                         </div>
@@ -292,7 +292,7 @@
                                 </div>
                                 <div class="team-profile">
                                     <h4>Mayur Joshi</h4>
-                                    <span class="title">Ads Manager</span>
+                                    <span class="title">Ads Manager | UI/UX Designer</span>
                                 </div>
                             </div>
                         </div>
