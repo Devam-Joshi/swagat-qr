@@ -236,7 +236,7 @@
                                 </div>
                                 <div class="team-profile">
                                     <h4>Devam Joshi</h4>
-                                    <span class="title">Co-CEO & Digital Marketing Head | Developement Head</span>
+                                    <span class="title">Co-CEO | Digital Marketing Head | Software Development Head</span>
                                 </div>
                             </div>
                         </div>
