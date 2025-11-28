@@ -1,6 +1,17 @@
 @extends('client.layouts.main')
 @section('title', 'About Us | Famify Creative')
+{{-- Meta Description --}}
+@section('meta_description', 'Discover Famify Creative — a branding, design, and digital agency crafting unforgettable brand experiences.')
 
+{{-- Keywords --}}
+@section('meta_keywords', 'about famify creative, creative agency, branding agency, digital design team')
+
+{{-- Open Graph --}}
+@section('og_title', 'About Famify Creative – Who We Are')
+@section('og_description', 'We are a passionate creative team offering branding, design, and digital services.')
+@section('og_image', asset('assets/myImage/android-chrome-512x512.png'))
+
+@section('canonical', route('about'))
 
 @section('content')
     <!-- Section Banner -->

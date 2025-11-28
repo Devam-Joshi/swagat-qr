@@ -1,5 +1,21 @@
 @extends('client.layouts.main')
 
+@section('title', 'Our Services | Famify Creative')
+
+{{-- Meta Description --}}
+@section('meta_description', 'Explore Famify Creative’s full range of digital services including branding, web design,
+    marketing, ads, content creation, and more.')
+
+    {{-- Keywords --}}
+@section('meta_keywords', 'creative agency services, branding services, digital marketing services, social media
+    marketing, web design, famify creative')
+
+    {{-- Open Graph --}}
+@section('og_title', 'Famify Creative – Our Services')
+@section('og_description', 'Discover powerful digital and creative services designed to elevate your brand.')
+@section('og_image', asset('assets/myImage/android-chrome-512x512.png'))
+
+
 @section('content')
     <!-- Banner Section -->
     <div class="section-banner">
@@ -46,8 +62,8 @@
                                 <div class="d-flex flex-row justify-content-between align-items-center">
                                     <div class="service-icon-wrapper">
                                         <div class="service-icon">
-                                            <img src="{{ asset('assets/image/Icon-7.png') }}"
-                                                alt="Social Media Marketing" class="img-fluid">
+                                            <img src="{{ asset('assets/image/Icon-7.png') }}" alt="Social Media Marketing"
+                                                class="img-fluid">
                                         </div>
                                     </div>
                                     <div class="service-title">
@@ -70,8 +86,8 @@
                                 <div class="d-flex flex-row justify-content-between align-items-center">
                                     <div class="service-icon-wrapper">
                                         <div class="service-icon">
-                                            <img src="{{ asset('assets/image/digital-marketing-icons-F4LJ4W8.png') }}" alt="Content Marketing"
-                                                class="img-fluid">
+                                            <img src="{{ asset('assets/image/digital-marketing-icons-F4LJ4W8.png') }}"
+                                                alt="Content Marketing" class="img-fluid">
                                         </div>
                                     </div>
                                     <div class="service-title">
@@ -94,7 +110,8 @@
                                 <div class="d-flex flex-row justify-content-between align-items-center">
                                     <div class="service-icon-wrapper">
                                         <div class="service-icon">
-                                            <img src="{{ asset('assets/image/Icon-8.png') }}" alt="PPC Advertising" class="img-fluid">
+                                            <img src="{{ asset('assets/image/Icon-8.png') }}" alt="PPC Advertising"
+                                                class="img-fluid">
                                         </div>
                                     </div>
                                     <div class="service-title">
@@ -117,7 +134,8 @@
                                 <div class="d-flex flex-row justify-content-between align-items-center">
                                     <div class="service-icon-wrapper">
                                         <div class="service-icon">
-                                            <img src="{{ asset('assets/image/Icon-6.png') }}" alt="Branding & Design" class="img-fluid">
+                                            <img src="{{ asset('assets/image/Icon-6.png') }}" alt="Branding & Design"
+                                                class="img-fluid">
                                         </div>
                                     </div>
                                     <div class="service-title">
@@ -164,8 +182,8 @@
                                 <div class="d-flex flex-row justify-content-between align-items-center">
                                     <div class="service-icon-wrapper">
                                         <div class="service-icon">
-                                            <img src="{{ asset('assets/image/Icon-1.png') }}"
-                                                alt="Digital Strategy" class="img-fluid">
+                                            <img src="{{ asset('assets/image/Icon-1.png') }}" alt="Digital Strategy"
+                                                class="img-fluid">
                                         </div>
                                     </div>
                                     <div class="service-title">
@@ -191,4 +209,5 @@
             </div>
         </div>
     </div>
+    
 @endsection

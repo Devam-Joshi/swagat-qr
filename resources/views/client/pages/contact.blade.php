@@ -1,8 +1,41 @@
 @extends('client.layouts.main')
 
-@section('title', 'Contact - Famify Creative')
+@section('title', 'Contact | Famify Creative')
+
+{{-- Meta Description --}}
+@section('meta_description',
+    'Get in touch with Famify Creative for branding, web design, digital marketing, and
+    creative services. Let’s build something amazing together.')
+
+    {{-- Keywords --}}
+@section('meta_keywords',
+    'contact famify creative, creative agency contact, branding inquiry, digital marketing
+    contact')
+
+    {{-- Open Graph --}}
+@section('og_title', 'Contact Famify Creative')
+@section('og_description', 'Reach out to our creative agency for branding, design, and digital solutions.')
+@section('og_image', asset('assets/myImage/android-chrome-512x512.png'))
+
+{{-- Canonical --}}
+@section('canonical', route('contact'))
 
 @section('content')
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "url": "{{ route('contact') }}",
+  "name": "Contact Famify Creative",
+  "description": "Reach out to Famify Creative for branding, web design, marketing, and creative services.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Famify Creative",
+    "url": "https://famifycreative.com"
+  }
+}
+</script>
+
     <div class="section-banner">
         <div class="banner-layout-wrapper">
             <div class="banner-layout">
